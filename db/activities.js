@@ -11,11 +11,21 @@ async function getAllActivities() {
 }
 
 async function getActivityById(id) {
-  
+  const {rows: [activity]} = await client.query(`
+  SELECT *
+  FROM activities
+  WHERE id='${id}';
+  `)
+  return activity;
 }
 
 async function getActivityByName(name) {
-
+  const {rows: [activity]} = await client.query(`
+  SELECT *
+  FROM activities
+  WHERE name='${name}';
+  `)
+  return activity;
 }
 
 // select and return an array of all activities
@@ -37,7 +47,16 @@ return createdActivity;
 // do update the name and description
 // return the updated activity
 async function updateActivity({ id, ...fields }) {
-
+  const setString = Object.keys(fields).map(
+    (elem, index) => `"${elem}"=$${index + 1}`
+  ).join(', ');
+  const {rows: [updatedActivity]} = await client.query(`
+  UPDATE activities
+  SET ${setString}
+  WHERE id=${id}
+  RETURNING *;
+  `, Object.values(fields))
+  return updatedActivity;
 }
 
 
