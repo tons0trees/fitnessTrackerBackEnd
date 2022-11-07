@@ -19,7 +19,12 @@ async function attachActivitiesToRoutines(routines) {
 
 // return the new activity
 async function createActivity({ name, description }) {
-
+const {rows: [createdActivity]} = await client.query(`
+  INSERT INTO activities(name, description)
+  VALUES($1, $2)
+  RETURNING *;
+`, [name, description])
+return createdActivity;
 }
 
 // don't try to update the id
