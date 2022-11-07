@@ -2,7 +2,12 @@ const client = require("./client")
 
 // database functions
 async function getAllActivities() {
+  const {rows: allActivities} = await client.query(`
+  SELECT *
+  FROM activities
+  `)
 
+  return allActivities
 }
 
 async function getActivityById(id) {
