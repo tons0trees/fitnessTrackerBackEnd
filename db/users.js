@@ -7,7 +7,8 @@ async function createUser({ username, password }) {
   const {rows: [createdUser]} = await client.query(`
   INSERT INTO users(username, password)
   VALUES($1, $2)
-  RETURNING *;
+  ON CONFLICT (username) DO NOTHING
+  RETURNING id, username;
   `, [username, password])
 
   return createdUser;
@@ -15,20 +16,33 @@ async function createUser({ username, password }) {
 }
 
 async function getUser({ username, password }) {
-  const {rows: [returnedUser]} = await client.query(`
-  SELECT *
+  const {rows: [user]} = await client.query(`
+  SELECT id, username
   FROM users
   WHERE username='${username}' AND password='${password}';
   `)
-  console.log("test2", returnedUser)
+  
+  return user
 }
 
 async function getUserById(userId) {
+  const {rows: [user]} = await client.query(`
+  SELECT id, username
+  FROM users
+  WHERE id='${userId}';
+  `)
 
+  return user
 }
 
 async function getUserByUsername(userName) {
+  const {rows: [user]} = await client.query(`
+  SELECT id, username
+  FROM users
+  WHERE username='${userName}';
+  `)
 
+  return user
 }
 
 module.exports = {
