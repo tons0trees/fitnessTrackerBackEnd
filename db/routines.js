@@ -1,6 +1,12 @@
 const client = require('./client');
 
 async function getRoutineById(id){
+  const {rows: [allRoutines]} = client.query(`
+  SELECT *
+  FROM routines
+  WHERE id=${id};
+  `)
+  console.log("**** result ****", allRoutines)
 }
 
 async function getRoutinesWithoutActivities(){
