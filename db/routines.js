@@ -1,12 +1,18 @@
 const client = require('./client');
+const { getRoutineActivitiesByRoutine } = require('./routine_activities.js')
+const { getActivityById } = require('./activities')
 
 async function getRoutineById(id){
-  const {rows: [allRoutines]} = client.query(`
+  const {rows: [returnedRoutine]} = await client.query(`
   SELECT *
   FROM routines
   WHERE id=${id};
   `)
-  console.log("**** result ****", allRoutines)
+
+  const activityNums = await getRoutineActivitiesByRoutine(returnedRoutine)
+  returnedRoutine.activities = await Promise.all(activityNums.map(elem => getActivityById(elem.activityId)))
+
+  return returnedRoutine
 }
 
 async function getRoutinesWithoutActivities(){
