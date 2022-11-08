@@ -48,9 +48,22 @@ async function updateRoutineActivity ({id, ...fields}) {
 }
 
 async function destroyRoutineActivity(id) {
+  const {rows: [deletedRoutineActivity]} = await client.query(`
+  DELETE FROM routine_activities
+  WHERE id=${id}
+  RETURNING *
+  ;`)
+  return deletedRoutineActivity
 }
 
 async function canEditRoutineActivity(routineActivityId, userId) {
+  const {rows: [checkedRoutineActivity]} = await client.query(`
+    SELECT "creatorId"
+    FROM routines
+    WHERE id IN (SELECT "routineId" FROM routine_activities WHERE id=${routineActivityId})
+  ;`)
+
+  return checkedRoutineActivity.creatorId === userId
 }
 
 module.exports = {

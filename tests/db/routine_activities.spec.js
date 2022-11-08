@@ -110,7 +110,7 @@ describe("DB Routine Activities", () => {
     })
   })
 
-  xdescribe("destroyRoutineActivity(id)", () => {
+  describe("destroyRoutineActivity(id)", () => {
     it("remove routine_activity from database", async () => {
       const fakeRoutineActivity = await createFakeRoutineActivity();
 
@@ -126,7 +126,7 @@ describe("DB Routine Activities", () => {
     })
   })
 
-  xdescribe("canEditRoutineActivity", () => {
+  describe("canEditRoutineActivity", () => {
     it("should return true if routine activity can be edited by user", async () => {
       const fakeUser = await createFakeUser("Jay");
       const fakeRoutine = await createFakePublicRoutine(fakeUser.id, "At 3pm", "Forever");

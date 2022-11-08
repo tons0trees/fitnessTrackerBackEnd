@@ -89,10 +89,29 @@ async function createRoutine({creatorId, isPublic, name, goal}) {
 }
 
 async function updateRoutine({id, ...fields}) {
+  const setStr = Object.keys(fields).map((elem, index) => `"${elem}"=$${index+1}`).join(', ')
+  const {rows: [updatedRoutine]} = await client.query(`
+    UPDATE routines
+    SET ${setStr}
+    WHERE id=${id}
+    RETURNING *
+  ;`, Object.values(fields))
+  return updatedRoutine
 }
 
 async function destroyRoutine(id) {
+  const {rows: deletedRoutineActivities} = await client.query(`
+    DELETE FROM routine_activities
+    WHERE "routineId"=${id}
+    RETURNING *
+  ;`)
 
+  const {rows: [deletedRoutine]} = await client.query(`
+    DELETE FROM routines
+    WHERE id=${id}
+    RETURNING *
+  ;`)
+  //we could return the deleted routine here pretty easily
 }
 
 module.exports = {
