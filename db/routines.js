@@ -1,6 +1,7 @@
 const client = require('./client');
 const { getRoutineActivitiesByRoutine } = require('./routine_activities.js')
-const { getActivityById } = require('./activities')
+const { attachActivitiesToRoutines, getActivityById } = require('./activities')
+const { getUserById } =  require('./users')
 
 async function getRoutineById(id){
   const {rows: [returnedRoutine]} = await client.query(`
@@ -9,14 +10,11 @@ async function getRoutineById(id){
   WHERE id=${id};
   `)
 
-  const activityNums = await getRoutineActivitiesByRoutine(returnedRoutine)
-  returnedRoutine.activities = await Promise.all(activityNums.map(elem => getActivityById(elem.activityId)))
-
   return returnedRoutine
 }
 
 async function getRoutinesWithoutActivities(){
-  let {rows: allRoutines} = await client.query(`
+  const {rows: allRoutines} = await client.query(`
   SELECT *
   FROM routines;
   `)
@@ -25,6 +23,20 @@ async function getRoutinesWithoutActivities(){
 }
 
 async function getAllRoutines() {
+  const {rows: allRoutineIds} = await client.query(`
+  SELECT id
+  FROM routines;
+  `)
+
+  const allRoutines = await Promise.all(allRoutineIds.map(elem => getRoutineById(elem.id)))
+  const routinesWithActivities = await attachActivitiesToRoutines(allRoutines)
+
+  const names = await Promise.all(allRoutines.map(elem => getUserById(elem.creatorId)))
+  routinesWithActivities.forEach((elem, index) => {elem.creatorName = names[index].username})
+
+  //routinesWithActivities.forEach(async (elem) => {elem.creatorName = await getUserById.username})
+
+  return routinesWithActivities
 }
 
 async function getAllRoutinesByUser({username}) {
