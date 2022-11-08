@@ -46,12 +46,36 @@ async function getAllRoutinesByUser({username}) {
 }
 
 async function getPublicRoutinesByUser({username}) {
+  const {rows} = await client.query(`
+  SELECT routines.*, users.username AS "creatorName"
+  FROM routines
+  JOIN users ON "creatorId"=users.id
+  WHERE "creatorId" IN (SELECT id FROM users WHERE username='${username}') AND "isPublic"=TRUE
+  ;`)
+  const routinesWActivities = await attachActivitiesToRoutines(rows)
+  return routinesWActivities;
 }
 
 async function getAllPublicRoutines() {
+  const {rows} = await client.query(`
+  SELECT routines.*, users.username AS "creatorName"
+  FROM routines
+  JOIN users ON "creatorId"=users.id
+  WHERE "isPublic"=TRUE
+  ;`)
+  const routinesWActivities = await attachActivitiesToRoutines(rows)
+  return routinesWActivities;
 }
 
 async function getPublicRoutinesByActivity({id}) {
+  const {rows} = await client.query(`
+  SELECT routines.*, users.username AS "creatorName"
+  FROM routines
+  JOIN users ON "creatorId"=users.id
+  WHERE "isPublic"=TRUE AND routines.id IN (SELECT "routineId" FROM routine_activities WHERE "activityId"=${id})
+  ;`)
+  const routinesWActivities = await attachActivitiesToRoutines(rows)
+  return routinesWActivities;
 }
 
 async function createRoutine({creatorId, isPublic, name, goal}) {
@@ -68,6 +92,7 @@ async function updateRoutine({id, ...fields}) {
 }
 
 async function destroyRoutine(id) {
+
 }
 
 module.exports = {
