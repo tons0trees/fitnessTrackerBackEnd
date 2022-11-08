@@ -35,6 +35,14 @@ async function getAllRoutines() {
 }
 
 async function getAllRoutinesByUser({username}) {
+  const {rows} = await client.query(`
+  SELECT routines.*, users.username AS "creatorName"
+  FROM routines, users
+  WHERE "creatorId" IN (SELECT id FROM users WHERE username='${username}')
+  JOIN users ON "creatorId"=users.id
+  ;`)
+  const routinesWActivities = await attachActivitiesToRoutines(rows)
+  return routinesWActivities;
 }
 
 async function getPublicRoutinesByUser({username}) {
