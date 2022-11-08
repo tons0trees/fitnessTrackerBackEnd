@@ -115,7 +115,7 @@ describe("DB Routines", () => {
       `);
   });
 
-  xdescribe("getAllRoutines", () => {
+  describe("getAllRoutines", () => {
 
     it("should include the public routine", async () => {
       const routines = await getAllRoutines();
