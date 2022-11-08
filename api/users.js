@@ -14,7 +14,11 @@ router.post('/register', async (req, res, next) => {
         createdUser
     });
 })
-router.use()
+router.use(req, res, next) => {
+    console.log("A request has been made to users...")
+
+    next()
+}
 // GET /api/users/me
 
 // GET /api/users/:username/routines
