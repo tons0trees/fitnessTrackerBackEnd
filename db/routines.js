@@ -23,18 +23,13 @@ async function getRoutinesWithoutActivities(){
 }
 
 async function getAllRoutines() {
-  const {rows: allRoutineIds} = await client.query(`
-  SELECT id
-  FROM routines;
-  `)
+  const {rows} = await client.query(`
+  SELECT routines.*, users.username AS "creatorName"
+  FROM routines
+  JOIN users ON "creatorId"=users.id
+  ;`)
 
-  const allRoutines = await Promise.all(allRoutineIds.map(elem => getRoutineById(elem.id)))
-  const routinesWithActivities = await attachActivitiesToRoutines(allRoutines)
-
-  const names = await Promise.all(allRoutines.map(elem => getUserById(elem.creatorId)))
-  routinesWithActivities.forEach((elem, index) => {elem.creatorName = names[index].username})
-
-  //routinesWithActivities.forEach(async (elem) => {elem.creatorName = await getUserById.username})
+  const routinesWithActivities = await attachActivitiesToRoutines(rows)
 
   return routinesWithActivities
 }
