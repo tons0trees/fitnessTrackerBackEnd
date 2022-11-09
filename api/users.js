@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken')
-const { createUser, getUser, getUserByUsername, getPublicRoutinesByUser } = require('../db');
+const { createUser, getUser, getUserByUsername, getPublicRoutinesByUser, getAllRoutinesByUser } = require('../db');
 const { requireUser } = require('./utils')
 
 router.use((req, res, next) => {
@@ -54,9 +54,9 @@ router.post('/register', async (req, res, next) => {
             });
         } else {
             const createdUser = await createUser({ username, password });
-    
+
             const token = jwt.sign(createdUser, process.env.JWT_SECRET, { expiresIn: '1w' })
-    
+
             res.send({
                 message: 'Thanks for joining FitnessTracker',
                 token,
@@ -81,10 +81,16 @@ router.get('/me', requireUser, async (req, res, next) => {
 router.get('/:username/routines', async (req, res, next) => {
     try {
         const username = req.params.username
-        const routines = await getPublicRoutinesByUser({username})
-        res.send(routines)       
-    } catch ({name, message}) {
-        next({name, message})
+        if (req.user && username === req.user.username) {
+            const routines = await getAllRoutinesByUser({ username })
+            res.send(routines)
+        } else {
+            const routines = await getPublicRoutinesByUser({ username })
+            res.send(routines)
+        }
+
+    } catch ({ name, message }) {
+        next({ name, message })
     }
 })
 
