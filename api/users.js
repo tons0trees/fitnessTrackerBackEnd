@@ -1,12 +1,14 @@
 const express = require('express');
-const { createUser, getUser, getUserByUsername } = require('../db');
 const router = express.Router();
 const jwt = require('jsonwebtoken')
+const { createUser, getUser, getUserByUsername, getPublicRoutinesByUser } = require('../db');
+const { requireUser } = require('./utils')
 
 router.use((req, res, next) => {
     console.log("A request has been made to users...")
     next();
 })
+
 // POST /api/users/login
 router.post('/login', async (req, res, next) => {
     const { username, password } = req.body;
@@ -16,11 +18,13 @@ router.post('/login', async (req, res, next) => {
         const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1w' })
 
         res.send({
+            message: "you're logged in!",
             user,
             token
         })
     } else {
         next({
+            error: "pick a number",
             name: 'InvalidUsernameOrPassword',
             message: 'The username or password provided was not valid'
         })
@@ -31,13 +35,22 @@ router.post('/login', async (req, res, next) => {
 router.post('/register', async (req, res, next) => {
     const { username, password } = req.body;
 
+    if (password.length < 8) {
+        next({
+            error: 'some number',
+            message: "Password Too Short!",
+            name: "PasswordTooShort",
+        })
+    }
+
     try {
         const user = await getUserByUsername(username)
 
         if (user) {
             next({
-                name: 'UserExists',
-                message: 'This user is taken'
+                error: "any old number",
+                name: 'UserTakenError',
+                message: `User ${username} is already taken.`
             });
         } else {
             const createdUser = await createUser({ username, password });
@@ -45,8 +58,9 @@ router.post('/register', async (req, res, next) => {
             const token = jwt.sign(createdUser, process.env.JWT_SECRET, { expiresIn: '1w' })
     
             res.send({
-                createdUser,
-                token
+                message: 'Thanks for joining FitnessTracker',
+                token,
+                user: createdUser
             });
         }
     } catch ({ name, message }) {
@@ -58,7 +72,20 @@ router.post('/register', async (req, res, next) => {
 
 })
 // GET /api/users/me
+router.get('/me', requireUser, async (req, res, next) => {
+    res.send(req.user)
+    //TODO do i need a try catch for error handling in this simple of a function?
+})
 
 // GET /api/users/:username/routines
+router.get('/:username/routines', async (req, res, next) => {
+    try {
+        const username = req.params.username
+        const routines = await getPublicRoutinesByUser({username})
+        res.send(routines)       
+    } catch ({name, message}) {
+        next({name, message})
+    }
+})
 
 module.exports = router;

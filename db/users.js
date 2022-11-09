@@ -39,6 +39,7 @@ async function getUserById(userId) {
   return user
 }
 
+//avoid using since it returns the password and doesn't authenticate anything
 async function getUserByUsername(userName) {
   const {rows: [user]} = await client.query(`
   SELECT *
