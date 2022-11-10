@@ -13,6 +13,15 @@ async function getRoutineById(id){
   return returnedRoutine
 }
 
+async function getRoutineByName(name){
+  const {rows: [namedRoutine]} = await client.query(`
+  SELECT *
+  FROM routines
+  WHERE name=${name};
+  `)
+  return namedRoutine
+}
+
 async function getRoutinesWithoutActivities(){
   const {rows: allRoutines} = await client.query(`
   SELECT *
@@ -79,6 +88,7 @@ async function getPublicRoutinesByActivity({id}) {
 }
 
 async function createRoutine({creatorId, isPublic, name, goal}) {
+  console.log("***** DB LOG *****", {creatorId, isPublic, name, goal})
   const {rows: [createdRoutine]} = await client.query(`
   INSERT INTO routines("creatorId", "isPublic", name, goal)
   VALUES ($1, $2, $3, $4)
@@ -116,6 +126,7 @@ async function destroyRoutine(id) {
 
 module.exports = {
   getRoutineById,
+  getRoutineByName,
   getRoutinesWithoutActivities,
   getAllRoutines,
   getAllPublicRoutines,
@@ -124,5 +135,5 @@ module.exports = {
   getPublicRoutinesByActivity,
   createRoutine,
   updateRoutine,
-  destroyRoutine,
+  destroyRoutine
 }
