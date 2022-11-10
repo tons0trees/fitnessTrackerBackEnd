@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllPublicRoutines, createRoutine, getRoutineByName } = require('../db');
+const { getAllPublicRoutines, createRoutine, getRoutineByName, getRoutineById } = require('../db');
 const { requireUser } = require('./utils')
 // GET /api/routines
 router.get('/', async (req, res, next) => {
@@ -11,7 +11,6 @@ router.get('/', async (req, res, next) => {
 router.post('/', requireUser, async (req, res, next) => {
     const creatorId = req.user.id
     const { isPublic, name, goal } = req.body //check that these exist?
-    console.log("***** object we pass to the DB function *****", {creatorId, isPublic, name, goal})
     try {
         const existingRoutine = await getRoutineByName(name)
         if (existingRoutine) {
@@ -21,13 +20,12 @@ router.post('/', requireUser, async (req, res, next) => {
                 message: 'This routine already exists'
             })
         } else {
-            console.log("***** look here *****", {creatorId, isPublic, name, goal})
             const createdRoutine = await createRoutine({ creatorId, isPublic, name, goal })
             res.send(createdRoutine)
         }
 
-    } catch ({error, name, message}) {
-        next({error, name, message})
+    } catch ({ error, name, message }) {
+        next({ error, name, message })
     }
 
 
@@ -35,7 +33,35 @@ router.post('/', requireUser, async (req, res, next) => {
 
 })
 // PATCH /api/routines/:routineId
+router.patch('/:routineId', requireUser, async (req, res, next) => {
+    try {
+        const routineId = req.params.routineId
+        const existingRoutine = await getRoutineById(routineId)
+        if (existingRoutine) {
+            if (existingRoutine.creatorId === req.user.id) {
+                const fields = req.body
+                const updatedRoutine = await updatedRoutine({ id: routineId, ...fields })
+                res.send(updatedRoutine)
+            } else {
+                res.status(403)
+                next({
+                    error: 'some number',
+                    name: 'UnauthorizedUser',
+                    message: `User ${req.user.username} is not allowed to update ${existingRoutine.name}`
+                })
+            }
+        } else {
+            next({
+                error: 'some number',
+                name: 'RoutineNotFound',
+                message: `Routine ${routineId} not found`
+            })
+        }
 
+    } catch ({ error, name, message }) {
+        next({ error, name, message })
+    }
+})
 // DELETE /api/routines/:routineId
 
 // POST /api/routines/:routineId/activities
