@@ -14,10 +14,11 @@ async function getRoutineById(id){
 }
 
 async function getRoutineByName(name){
+  console.log('** In the getRoutineByName **', name);
   const {rows: [namedRoutine]} = await client.query(`
   SELECT *
   FROM routines
-  WHERE name=${name};
+  WHERE name='${name}';
   `)
   return namedRoutine
 }

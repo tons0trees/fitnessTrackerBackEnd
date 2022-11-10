@@ -9,10 +9,10 @@ router.get('/', async (req, res, next) => {
 })
 // POST /api/routines
 router.post('/', requireUser, async (req, res, next) => {
+    const creatorId = req.user.id
+    const { isPublic, name, goal } = req.body //check that these exist?
+    console.log("***** object we pass to the DB function *****", {creatorId, isPublic, name, goal})
     try {
-        const creatorId = req.user.id
-        const { isPublic, name, goal } = req.body
-        console.log("***** HERE *****", {creatorId, isPublic, name, goal})
         const existingRoutine = await getRoutineByName(name)
         if (existingRoutine) {
             next({
