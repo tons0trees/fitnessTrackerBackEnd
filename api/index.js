@@ -36,7 +36,9 @@ router.use((req, res, next) => {
 
 // GET /api/health
 router.get('/health', async (req, res, next) => {
-    res.send('all is well')
+    res.send({
+        message: "all is well"
+    })
 });
 
 // ROUTER: /api/users

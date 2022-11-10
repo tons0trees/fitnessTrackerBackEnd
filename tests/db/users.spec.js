@@ -33,7 +33,7 @@ describe("DB Users", () => {
       expect(queriedUser.username).toBe(fakeUserData.username);
     });
 
-    xit("EXTRA CREDIT: Does not store plaintext password in the database", async () => {
+    it("EXTRA CREDIT: Does not store plaintext password in the database", async () => {
       const fakeUserData = {
         username: "Harry",
         password: faker.internet.password(),
@@ -43,7 +43,7 @@ describe("DB Users", () => {
       expect(queriedUser.password).not.toBe(fakeUserData.password);
     });
 
-    xit("EXTRA CREDIT: Hashes the password (salted 10 times) before storing it to the database", async () => {
+    it("EXTRA CREDIT: Hashes the password (salted 10 times) before storing it to the database", async () => {
       const fakeUserData = {
         username: "Nicky",
         password: faker.internet.password(),
